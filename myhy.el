@@ -30,6 +30,9 @@
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-result)))
 
+;; eval whole buffer (hy-mode seems to buggy)
+
+
 ;; doc
 
 (setq myhy-doc (generate-new-buffer "*myhy-doc*"))
