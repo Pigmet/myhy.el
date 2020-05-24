@@ -34,8 +34,8 @@
 
 (defun myhy--last-word ()
   (save-excursion
-    (re-search-backward (rx (+ word)) (line-beginning-position) t)
-    (message "%s"  (thing-at-point 'word))))
+    (re-search-backward (rx (+ (not (any blank)))) (line-beginning-position) t)
+    (message "%s"  (thing-at-point 'symbol))))
 
 (defun myhy-doc ()
   (interactive)
