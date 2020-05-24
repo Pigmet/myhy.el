@@ -35,7 +35,9 @@
 (defun myhy--last-word ()
   (save-excursion
     (re-search-backward (rx (+ (not (any blank)))) (line-beginning-position) t)
-    (message "%s"  (thing-at-point 'symbol))))
+    (if-let ((res (thing-at-point 'symbol)))
+	(message "%s" res)
+      "")))
 
 (defun myhy-doc ()
   (interactive)
@@ -52,3 +54,5 @@
 	 (switch-to-buffer-other-window myhy-doc)))
 
 (provide 'myhy)
+
+
