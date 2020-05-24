@@ -7,9 +7,15 @@
 (defun myhy--eval-last-sexp-string ()
   (hy-shell--redirect-send (hy--last-sexp-string)))
 
+(defun myhy--eval-last-sexp-string-only-result
+    ()
+  (->> (myhy--eval-last-sexp-string)
+       (s-split "\n\n")
+       -last-item))
+
 (defun myhy-eval-last-sexp ()
   (interactive)
-  (mylet [res (myhy--eval-last-sexp-string)]
+  (mylet [res (myhy--eval-last-sexp-string-only-result)]
 	 (eros--eval-overlay res (point))))
 
 (setq myhy-result (generate-new-buffer "*myhy-result*"))
@@ -43,10 +49,7 @@
   (interactive)
   (mylet [word (myhy--last-word)
 	       res (read-string "doc for:" word)
-	       s (->>(myhy--doc-as-string res)
-		     (s-split "\n")
-		     (-drop 1)
-		     (s-join "\n"))]
+	       s (myhy--doc-as-string res)]
 	 (with-current-buffer myhy-doc
 	   (erase-buffer)
 	   (insert s)
