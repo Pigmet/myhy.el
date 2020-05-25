@@ -53,22 +53,31 @@
 		      (buffer-substring-no-properties start end)))
 	      (-map 's-trim))))
 
-(defun myhy-eval-buffer()
+(defun myhy-view-all-sexp-buffer()
   (interactive)
-  (mylet [forms (myhy--all-sexp-buffer)
-		res (list)]
-	 (loop for form in forms
-	       do
-	       (push
-		(hy-shell--redirect-send form)
-		res))
+  (mylet [forms (myhy--all-sexp-buffer)]
 	 (with-current-buffer myhy-result
 	   (erase-buffer)
-	   (python-mode)
-	   (insert (->> res
-			reverse
-			(s-join "\n\n")))
+	   (hy-mode)
+	   (insert (s-join "\n\n" forms))
 	   (beginning-of-buffer))
+	 (switch-to-buffer-other-window myhy-result)))
+
+(defun myhy--eval-buffer-list()
+  (interactive)
+  (setq res (list))
+  (loop for s in (myhy--all-sexp-buffer)
+	do
+	(push (hy-shell--redirect-send s) res))
+  (reverse res))
+
+(defun myhy-eval-buffer ()
+  (interactive)
+  (mylet [forms (myhy--eval-buffer-list)]
+	 (with-current-buffer myhy-result
+	   (save-excursion
+	     (python-mode)
+	     (insert (s-join "\n" forms))))
 	 (switch-to-buffer-other-window myhy-result)))
 
 ;; doc
@@ -93,6 +102,7 @@
 	       s (myhy--doc-as-string res)]
 	 (with-current-buffer myhy-doc
 	   (erase-buffer)
+	   (python-mode)
 	   (insert s)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-doc)))
