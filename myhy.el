@@ -15,6 +15,7 @@
        (s-split "\n\n")
        -last-item))
 
+;; TODO: get rid of the string representation of objetcs to display
 (defun myhy-eval-last-sexp ()
   (interactive)
   (mylet [res (myhy--eval-last-sexp-string-only-result)]
