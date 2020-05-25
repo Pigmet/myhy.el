@@ -45,7 +45,10 @@
 
 (defun myhy--last-word ()
   (save-excursion
-    (re-search-backward (rx (+ (not (any blank)))) (line-beginning-position) t)
+    (re-search-backward
+     (rx (+ (not (any blank))))
+     (line-beginning-position)
+     t)
     (if-let ((res (thing-at-point 'symbol)))
 	(message "%s" res)
       "")))

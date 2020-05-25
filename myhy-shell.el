@@ -9,7 +9,8 @@
 
 ;; regex for error message 
 
-(defconst myhy-shell-compile-error-regex "\n\nTraceback (most recent call last)")
+(defconst myhy-shell-compile-error-regex
+  "\n\nTraceback (most recent call last)")
 
 (defun myhy-shell--get-all-position-sexp-buffer()
   (mylet [res (list)
