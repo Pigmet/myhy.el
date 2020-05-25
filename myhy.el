@@ -33,69 +33,6 @@
 	   (insert res)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-result)))
-
-;; eval whole buffer (hy-mode seems to buggy)
-
-;;First parse all the s-expressions in the buffer,
-;; then let hy evaluate each of them.
-
-(defun myhy--all-sexp-buffer-1()
-  (mylet [res (list)
-	      start 0
-	      end 1]
-	 (save-excursion
-	   (goto-char (point-min))
-	   (while (< start end)
-	     (setq start (point))
-	     (cider-start-of-next-sexp 1 )
-	     (setq end (point))
-	     (push (list start end) res)))
-	 (->> res
-	      reverse
-	      (-map (-lambda ((start end))
-		      (buffer-substring-no-properties start end)))
-	      (-map 's-trim))))
-
-;; TODO : add hide-comment function 
-(defun myhy--all-sexp-buffer (&optional remove-comment?)
-  (mylet [res (myhy--all-sexp-buffer-1)]
-	 (if remove-comment?
-	     (-remove (-lambda (s) (s-matches-p
-				    (rx bol  "\;;" (+ anything))
-				    s))
-		      res)
-	   res)))
-
-(defun myhy-view-all-sexp-buffer()
-  (interactive)
-  (mylet [forms (myhy--all-sexp-buffer t)]
-	 (with-current-buffer myhy-result
-	   (erase-buffer)
-	   (hy-mode)
-	   (insert (s-join "\n\n" forms))
-	   (beginning-of-buffer))
-	 (switch-to-buffer-other-window myhy-result)))
-
-(defun myhy--eval-buffer-list()
-  (interactive)
-  (setq res (list))
-  (loop for s in (myhy--all-sexp-buffer)
-	do
-	(push (hy-shell--redirect-send s) res))
-  (reverse res))
-
-(defun myhy-eval-buffer
-    ()
-  "Use myhy-shell-eval-buffer."
-  (interactive)
-  (mylet [forms (myhy--eval-buffer-list)]
-	 (with-current-buffer myhy-result
-	   (erase-buffer)
-	   (save-excursion
-	     (python-mode)
-	     (insert (s-join "\n" forms))))
-	 (switch-to-buffer-other-window myhy-result)))
-
 ;; doc
 
 (setq myhy-doc (generate-new-buffer "*myhy-doc*"))
@@ -124,7 +61,6 @@
 	   (insert s)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-doc)))
-
 
 (provide 'myhy)
 
