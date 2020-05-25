@@ -3,13 +3,13 @@
 (require 'hy-shell)
 (require 'cider-util)
 
-;; TODO provide a document lookup utility
+;; TODO 1 provide a document lookup utility
+;; 2 signal compilation error 
 
 (defun myhy--eval-last-sexp-string ()
   (hy-shell--redirect-send (hy--last-sexp-string)))
 
-(defun myhy--eval-last-sexp-string-only-result
-    ()
+(defun myhy--eval-last-sexp-string-only-result ()
   (->> (myhy--eval-last-sexp-string)
        (s-split "\n\n")
        -last-item))
@@ -32,6 +32,7 @@
 	 (switch-to-buffer-other-window myhy-result)))
 
 ;; eval whole buffer (hy-mode seems to buggy)
+
 ;;First parse all the s-expressions in the buffer,
 ;; then let hy evaluate each of them.
 
@@ -66,7 +67,8 @@
 	   (python-mode)
 	   (insert (->> res
 			reverse
-			(s-join "\n\n"))))
+			(s-join "\n\n")))
+	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-result)))
 
 ;; doc
