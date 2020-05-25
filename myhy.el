@@ -3,6 +3,7 @@
 (require 'hy-shell)
 (require 'cider-util)
 
+
 ;; TODO 1 provide a document lookup utility
 ;; 2 signal compilation error 
 
@@ -14,6 +15,7 @@
        (s-split "\n\n")
        -last-item))
 
+;; TODO: get rid of the string representation of objetcs to display
 (defun myhy-eval-last-sexp ()
   (interactive)
   (mylet [res (myhy--eval-last-sexp-string-only-result)]
@@ -36,7 +38,7 @@
 ;;First parse all the s-expressions in the buffer,
 ;; then let hy evaluate each of them.
 
-(defun myhy--all-sexp-buffer()
+(defun myhy--all-sexp-buffer-1()
   (mylet [res (list)
 	      start 0
 	      end 1]
@@ -53,22 +55,42 @@
 		      (buffer-substring-no-properties start end)))
 	      (-map 's-trim))))
 
-(defun myhy-eval-buffer()
+;; TODO : add hide-comment function 
+(defun myhy--all-sexp-buffer (&optional remove-comment?)
+  (mylet [res (myhy--all-sexp-buffer-1)]
+	 (if remove-comment?
+	     (-remove (-lambda (s) (s-matches-p
+				    (rx bol  "\;;" (+ anything))
+				    s))
+		      res)
+	   res)))
+
+(defun myhy-view-all-sexp-buffer()
   (interactive)
-  (mylet [forms (myhy--all-sexp-buffer)
-		res (list)]
-	 (loop for form in forms
-	       do
-	       (push
-		(hy-shell--redirect-send form)
-		res))
+  (mylet [forms (myhy--all-sexp-buffer t)]
 	 (with-current-buffer myhy-result
 	   (erase-buffer)
-	   (python-mode)
-	   (insert (->> res
-			reverse
-			(s-join "\n\n")))
+	   (hy-mode)
+	   (insert (s-join "\n\n" forms))
 	   (beginning-of-buffer))
+	 (switch-to-buffer-other-window myhy-result)))
+
+(defun myhy--eval-buffer-list()
+  (interactive)
+  (setq res (list))
+  (loop for s in (myhy--all-sexp-buffer)
+	do
+	(push (hy-shell--redirect-send s) res))
+  (reverse res))
+
+(defun myhy-eval-buffer ()
+  (interactive)
+  (mylet [forms (myhy--eval-buffer-list)]
+	 (with-current-buffer myhy-result
+	   (erase-buffer)
+	   (save-excursion
+	     (python-mode)
+	     (insert (s-join "\n" forms))))
 	 (switch-to-buffer-other-window myhy-result)))
 
 ;; doc
@@ -97,6 +119,7 @@
 	       s (myhy--doc-as-string res)]
 	 (with-current-buffer myhy-doc
 	   (erase-buffer)
+	   (python-mode)
 	   (insert s)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-doc)))
