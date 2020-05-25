@@ -53,13 +53,6 @@ are the location of the sexp."
 
 ;; TODO: be more kind to the user and imporve the debugging information.
 
-(defun myhy-shell--goto-error-button (label f pos)
-  (insert-text-button label
-		      'action
-		      (lexical-let ((f f) (pos pos))
-			(find-file-other-window f)
-			(goto-char pos ))))
-
 (defun myhy-shell-eval-buffer()
   (interactive)
   (mylet [f (buffer-file-name)

@@ -84,7 +84,9 @@
 	(push (hy-shell--redirect-send s) res))
   (reverse res))
 
-(defun myhy-eval-buffer ()
+(defun myhy-eval-buffer
+    ()
+  "Use myhy-shell-eval-buffer."
   (interactive)
   (mylet [forms (myhy--eval-buffer-list)]
 	 (with-current-buffer myhy-result
@@ -100,11 +102,9 @@
 
 (defun myhy--doc-as-string (text)
   (hy-shell--redirect-send
-   (s-join " "
-	   (list "(import [inspect [signature]])"
-		 (format
-		  "(print + (str (signature %s)) %s.__doc__)"
-		  text text)))))
+   (format
+    "(print  %s.__doc__)"
+    text text)))
 
 (defun myhy--last-word ()
   (save-excursion
