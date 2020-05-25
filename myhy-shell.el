@@ -1,4 +1,3 @@
-
 (defmacro myhy-with-buffer
     (buffer &rest body)
   "Evaluates body in buffer and switch to it. The content of the buffer gets erased before the evaluation happens."
@@ -6,12 +5,9 @@
      (with-current-buffer ,buffer (erase-buffer)  ,@body)
      (switch-to-buffer-other-window ,buffer)))
 
-(defun myhy-shell--valid-hy-form-p(text)
-  (not  (s-matches?
-	 "\n\nTraceback (most recent call last)"
-	 (hy-shell--redirect-send text))))
+(defconst myhy-shell-comment-regex  (rx bol "\;;" (+ anything)))
 
-(setq myhy-comment-regex  (rx bol  "\;;" (+ anything)))
+(defconst myhy-shell-compile-error-regex "\n\nTraceback (most recent call last)")
 
 (defun myhy-shell--get-all-position-sexp-buffer()
   (mylet [res (list)
@@ -39,7 +35,7 @@ are the location of the sexp."
 				     end)))
        (-remove (-lambda ((text _ _))
 		  (or
-		   (s-matches? myhy-comment-regex text)
+		   (s-matches? myhy-shell-comment-regex text)
 		   (zerop (length text)))))))
 
 (setq myhy-shell-result (generate-new-buffer "myhy-shell"))
@@ -52,24 +48,38 @@ are the location of the sexp."
 	  (mylet
 	   [form (-first-item l)
 		 hy-res (hy-shell--redirect-send form)
-		 valid? (myhy-shell--valid-hy-form-p form)]
+		 valid? (not (s-matches? myhy-shell-compile-error-regex  hy-res))]
 	   (append l (list hy-res valid?)))))))
+
+;; TODO: be more kind to the user and imporve the debugging information.
+
+(defun myhy-shell--goto-error-button (label f pos)
+  (insert-text-button label
+		      'action
+		      (lexical-let ((f f) (pos pos))
+			(find-file-other-window f)
+			(goto-char pos ))))
 
 (defun myhy-shell-eval-buffer()
   (interactive)
-  (mylet [coll (myhy-shell--eval-buffer-impl)
-	       (form start end res _) (-first
-				       (-lambda (l)
-					 (not (-last-item l)))
-				       coll)]
-	 (if form
-	     (myhy-with-buffer myhy-shell-result
-			       (insert (format "Compile error -> %s" form)))
-	   (message "buffer was successfully evaluated."))))
+  (mylet [f (buffer-file-name)
+	    coll (myhy-shell--eval-buffer-impl)
+	    (form start end res _) (-first
+				    (-lambda (l)
+				      (not (-last-item l)))
+				    coll)]
+	 (if form ;; if the result is of compile error.
+	     (myhy-with-buffer
+	      myhy-shell-result
+	      (insert-text-button f
+				  'action
+				  (lexical-let ((f f)(start start))
+				    (-lambda (b)
+				      (find-file-other-window f)
+				      (goto-char start))))
+	      (insert "\n\n" res)
+	      (python-mode)
+	      (beginning-of-buffer))
+	   (message "success"))))
 
-;;(myhy-shell--ecal-buffer-impl)
-
-
-
-
-
+(provide 'myhy-shell)

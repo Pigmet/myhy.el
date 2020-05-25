@@ -2,6 +2,7 @@
 (require 'eros)
 (require 'hy-shell)
 (require 'cider-util)
+(require 'myhy-shell)
 
 
 ;; TODO 1 provide a document lookup utility
@@ -123,6 +124,7 @@
 	   (insert s)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-doc)))
+
 
 (provide 'myhy)
 
