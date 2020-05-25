@@ -77,7 +77,11 @@
 
 (defun myhy--doc-as-string (text)
   (hy-shell--redirect-send
-   (format "(print %s.__doc__)" text )))
+   (s-join " "
+	   (list "(import [inspect [signature]])"
+		 (format
+		  "(print + (str (signature %s)) %s.__doc__)"
+		  text text)))))
 
 (defun myhy--last-word ()
   (save-excursion
