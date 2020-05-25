@@ -27,9 +27,7 @@
 (defconst myhy-shell-comment-regex
   (rx bol  "\;;" (+ anything)  ))
 
-;; com
-
-;; TODO : remove comment from the parse result
+;; remove comment from the parse result
 
 (defun myhy-shell--remove-comment (s)
   (->> (s-split "\n" s)
@@ -37,6 +35,7 @@
        (s-join "\n")))
 					;
 (defun myhy-shell--get-all-sexp-buffer-string ()
+  "Returns list of (form start end)"
   (->> (myhy-shell--get-all-position-sexp-buffer)
        (-map (-lambda ((start end))
 	       (list
@@ -65,9 +64,6 @@
 			     (hy-mode)
 			     (insert s)))))
 
-(defun myhy-shell-view-all-comments ()
-  (interactive))
-
 (defun myhy-shell--eval-buffer-impl ()
   "Returns list of (form start end res valid?)"
   (->> (myhy-shell--get-all-sexp-buffer)
@@ -76,7 +72,9 @@
 	  (mylet
 	   [form (-first-item l)
 		 hy-res (hy-shell--redirect-send form)
-		 valid? (not (s-matches? myhy-shell-compile-error-regex  hy-res))]
+		 valid? (not (s-matches?
+			      myhy-shell-compile-error-regex
+			      hy-res))]
 	   (append l (list hy-res valid?)))))))
 
 ;; TODO: be more kind to the user and imporve the debugging information.
