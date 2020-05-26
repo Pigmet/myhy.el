@@ -43,6 +43,24 @@ specified by the string preceding the current point."
 
 (setq myhy-doc-buffer (generate-new-buffer "myhy-doc"))
 
+(setq myhy-doc-item-doc-buffer (generate-new-buffer "myhy-doc-item"))
+
+;; TODO add doc lookup 
+
+(defun myhy-doc-view-module-methods()
+  (interactive)
+  (mylet [module (myhy--last-word)
+		 coll (myhy-doc--parse-module-items module)]
+	 (myhy-with-buffer
+	  myhy-doc-buffer
+	  (insert (format "in module %s" module)
+		  "\n\n")
+	  (loop for s in coll
+		do
+		(insert-text-button s)
+		(insert  "\n"))
+	  (beginning-of-buffer))))
+
 (provide 'myhy-doc)
 
 
