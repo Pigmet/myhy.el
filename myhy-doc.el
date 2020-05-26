@@ -1,6 +1,3 @@
-
-(hy-shell--redirect-send "(import [numpy :as num])")
-
 (defun myhy-doc--invalid-form-p (text)
   (s-matches? "\n\nTraceback (most recent call last)"
 	      (hy-shell--redirect-send text)))
@@ -45,15 +42,6 @@ specified by the string preceding the current point."
 	 (insert "." res)))
 
 (setq myhy-doc-buffer (generate-new-buffer "myhy-doc"))
-
-;; unfinished
-(defun myhy-doc-list-module-items ()
-  (interactive)
-  (mylet [text (myhy--last-word)
-	       coll (myhy-doc--parse-module-items text)]
-	 (myhy-with-buffer myhy-doc-buffer)))
-
-
 
 (provide 'myhy-doc)
 

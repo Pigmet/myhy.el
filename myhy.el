@@ -3,6 +3,7 @@
 (require 'hy-shell)
 (require 'cider-util)
 (require 'myhy-shell)
+(require 'myhy-doc)
 
 
 ;; TODO 1 provide a document lookup utility
