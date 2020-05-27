@@ -20,7 +20,6 @@
 	 (-map 's-trim)
 	 (-remove (-lambda (s) (zerop (length s)))))))
 
-;; use this?
 (defun myhy-doc--doc-string (text)
   "Returns the string of document of text."
   (hy-shell--redirect-send
