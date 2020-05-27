@@ -12,6 +12,7 @@
 (defconst myhy-shell-compile-error-regex
   "\n\nTraceback (most recent call last)")
 
+;; is this ok?
 (defun myhy-shell--get-all-position-sexp-buffer()
   (mylet [res (list)
 	      start 0
@@ -75,6 +76,9 @@
        (s-matches? "Traceback (most recent call last)")
        not))
 
+(defun myhy-shell--invalid-form? (res)
+  (not (myhy-shell--valid-form? res)))
+
 (defun myhy-shell--eval-buffer-impl ()
   "Returns list of (form start end res valid?)"
   (->> (myhy-shell--get-all-sexp-buffer)
@@ -88,27 +92,50 @@
 
 ;; TODO: be more kind to the user and imporve the debugging information.
 
-(defun myhy-shell-eval-buffer()
+;; test method. the hy repl seems insecure.
+(defun myhy-shell-eval-buffer-display()
   (interactive)
-  (mylet [f (buffer-file-name)
-	    coll (myhy-shell--eval-buffer-impl)
-	    (form start end res _) (-first
-				    (-lambda (l)
-				      (not (-last-item l)))
-				    coll)]
-	 (if form ;; if the result is of compile error.
+  (mylet [forms (->> (myhy-shell--get-all-sexp-buffer)
+		     (-map '-first-item))]
+	 (myhy-with-buffer myhy-shell-result
+			   (erase-buffer)
+			   (loop for form in forms
+				 do
+				 (insert
+				  form
+				  "\n"
+				  (hy-shell--redirect-send form)
+				  "\n")))))
+
+(defun myhy-shell--get-first-error ()
+  (->> (myhy-shell--get-all-sexp-buffer)
+       (-map (-lambda ((f start end))
+	       (list (hy-shell--redirect-send f) start end)))
+       (-first (-lambda ((f start end)) (myhy-shell--invalid-form? f)))))
+
+(defun myhy-shell-eval-buffer ()
+  (interactive)
+  (mylet [fname (buffer-file-name)
+		(form start end) (myhy-shell--get-first-error)]
+	 (if form
 	     (myhy-with-buffer
 	      myhy-shell-result
-	      (insert-text-button f
-				  'action
-				  (lexical-let ((f f)(start start))
-				    (-lambda (b)
-				      (find-file-other-window f)
-				      (goto-char start))))
-	      (insert "\n\n" res)
-	      (python-mode)
-	      (beginning-of-buffer))
+	      (save-excursion
+		(python-mode)
+		(insert-text-button
+		 fname
+		 'action
+		 (lexical-let
+		     ((start start) (fname fname))
+		   (-lambda (b)
+		     (find-file fname)
+		     (goto-char start))))
+		(insert "\n\n" form)))
 	   (message "success"))))
+
+;; TODO: add eval-region
+
+;;(myhy-shell--invalid-form?)
 
 (provide 'myhy-shell)
 
