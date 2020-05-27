@@ -54,20 +54,23 @@ result."
 (setq myhy-doc (generate-new-buffer "*myhy-doc*"))
 
 (defun myhy--doc-as-string (text)
-  (hy-shell--redirect-send
-   (format
-    "(print  %s.__doc__)"
-    text text)))
+  (->>
+   (hy-shell--redirect-send
+    (format
+     "(print  %s.__doc__)"
+     text text))
+   (s-split "\n")
+   (-drop 1)
+   (s-join "\n")))
 
 (defun myhy--signature-string (text)
-  (mylet [res  (->>  (hy-shell--redirect-send
-		      (format
-		       "(do(import [inspect [signature]]) (signature %s))" text))
-		     (s-split "\n\n")
-		     -last-item)]
+  (mylet [res
+	  (->>  (hy-shell--redirect-send
+		 (format
+		  "(do(import [inspect [signature]]) (signature %s))" text))
+		(s-split "\n\n")
+		-last-item)]
 	 (unless (s-matches? "Traceback" res) res)))
-
-
 
 (defun myhy--last-word ()
   (save-excursion
@@ -83,11 +86,14 @@ result."
   (interactive)
   (mylet [word (myhy--last-word)
 	       res (read-string "doc for:" word)
-	       s (myhy--doc-as-string res)]
+	       s (myhy--doc-as-string res)
+	       sig (myhy--signature-string res)]
 	 (with-current-buffer myhy-doc
 	   (erase-buffer)
 	   (python-mode)
-	   (insert s)
+	   
+	   (when sig (insert sig "\n"))
+	   (insert   s)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-doc)))
 
