@@ -5,10 +5,6 @@
 (require 'myhy-shell)
 (require 'myhy-doc)
 
-
-;; TODO 1 provide a document lookup utility
-;; 2 signal compilation error 
-
 (defun myhy--eval-last-sexp-string ()
   (hy-shell--redirect-send (hy--last-sexp-string)))
 
@@ -64,6 +60,7 @@ result."
    (s-join "\n")))
 
 (defun myhy--signature-string (text)
+  "Returns signature of text if it exists, or nil."
   (mylet [res
 	  (->>  (hy-shell--redirect-send
 		 (format
