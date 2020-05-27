@@ -46,12 +46,15 @@
 		end)))))
 
 (defun myhy-shell--get-all-sexp-buffer ()
+  "Returns list of (form start end)"
   (->> (myhy-shell--get-all-sexp-buffer-string)
        (-map (-lambda ((text start end))
 	       (list
 		(myhy-shell--remove-comment text)
 		start
-		end)))))
+		end)))
+       (-map (-lambda ((form start end))
+	       (list (s-trim form) start end)))))
 
 (setq myhy-shell-result (generate-new-buffer "myhy-shell"))
 
@@ -65,6 +68,13 @@
 			     (hy-mode)
 			     (insert s)))))
 
+(defun myhy-shell--valid-form? (res)
+  (->> res
+       (s-split "\n\n")
+       -last-item
+       (s-matches? "Traceback (most recent call last)")
+       not))
+
 (defun myhy-shell--eval-buffer-impl ()
   "Returns list of (form start end res valid?)"
   (->> (myhy-shell--get-all-sexp-buffer)
@@ -73,9 +83,7 @@
 	  (mylet
 	   [form (-first-item l)
 		 hy-res (hy-shell--redirect-send form)
-		 valid? (not (s-matches?
-			      myhy-shell-compile-error-regex
-			      hy-res))]
+		 valid? (myhy-shell--valid-form? hy-res)]
 	   (append l (list hy-res valid?)))))))
 
 ;; TODO: be more kind to the user and imporve the debugging information.
