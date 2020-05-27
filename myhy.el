@@ -34,6 +34,21 @@
 	   (insert res)
 	   (beginning-of-buffer))
 	 (switch-to-buffer-other-window myhy-result)))
+
+(defun myhy-eval-last-sexp-paste ()
+  "Evaluates the last s-expression and copies and pastes the
+result."
+  (interactive)
+  (mylet [s (myhy--eval-last-sexp-string-only-result)]
+	 (insert
+	  (with-temp-buffer
+	    (->> s
+		 (s-split "\n")
+		 (-map (-lambda (x) (concat ";; " x)))
+		 (s-join "\n")
+		 insert)
+	    (buffer-string)))))
+
 ;; doc
 
 (setq myhy-doc (generate-new-buffer "*myhy-doc*"))
@@ -43,6 +58,16 @@
    (format
     "(print  %s.__doc__)"
     text text)))
+
+(defun myhy--signature-string (text)
+  (mylet [res  (->>  (hy-shell--redirect-send
+		      (format
+		       "(do(import [inspect [signature]]) (signature %s))" text))
+		     (s-split "\n\n")
+		     -last-item)]
+	 (unless (s-matches? "Traceback" res) res)))
+
+
 
 (defun myhy--last-word ()
   (save-excursion
