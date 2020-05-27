@@ -90,8 +90,7 @@ result."
 	       sig (myhy--signature-string res)]
 	 (with-current-buffer myhy-doc
 	   (erase-buffer)
-	   (python-mode)
-	   
+	   (insert word "\n\n")
 	   (when sig (insert sig "\n"))
 	   (insert   s)
 	   (beginning-of-buffer))
