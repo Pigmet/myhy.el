@@ -53,7 +53,7 @@ specified by the string preceding the current point."
 		 coll (myhy-doc--parse-module-items module)]
 	 (myhy-with-buffer
 	  myhy-doc-buffer
-	  (insert (format "in module %s" module)
+	  (insert (format "in %s:" module)
 		  "\n\n")
 	  (loop for s in coll
 		do
